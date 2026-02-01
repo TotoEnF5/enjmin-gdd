@@ -25,6 +25,10 @@ public:
 		return 1.0f * rand() / RAND_MAX;
 	}
 
+    static float randF2() {
+        return randF() * 2.0f - 1.0f;
+    }
+
 	static float angleRad() {
 		return randF() * 2 * (float)pi;
 	}

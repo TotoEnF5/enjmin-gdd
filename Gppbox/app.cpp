@@ -20,6 +20,7 @@
 #include "app.h"
 #include "C.hpp"
 
+#define NO_IMGUI
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -46,7 +47,7 @@ int main()
     sf::RenderWindow window(sf::VideoMode(C::RES_X, C::RES_Y,32), "SFML works!");
     //sf::RenderWindow window(sf::VideoMode(800, 600,32), "SFML works!");
     //sf::RenderWindow window(sf::VideoMode(1280, 720,32), "SFML works!");
-	window.setVerticalSyncEnabled(false);
+	window.setVerticalSyncEnabled(true); // c plus écolo comme ça
     Font font;
 
     if (!font.loadFromFile("res/MAIAN.TTF")) {
@@ -60,7 +61,9 @@ int main()
 		return 1;
 	}
 
+#ifndef NO_IMGUI
 	ImGui::SFML::Init(window);
+#endif
 
     Game g(&window);
 
@@ -125,10 +128,13 @@ int main()
 		}
 
 		//don't use imgui before this;
+#ifndef NO_IMGUI
 		ImGui::SFML::Update(window, sf::seconds((float)dt));
+#endif
 
         g.update(dt);
-		
+
+#ifndef NO_IMGUI
 		if (ImGui::CollapsingHeader("View")) {
 			auto sz = v.getSize();
 			ImGui::Value("size x", sz.x);
@@ -148,16 +154,22 @@ int main()
 			ImGui::LabelText("Avg Update Time", "%0.6f", captureMdt);
 			ImGui::LabelText("Avg FPS", "%0.6f", 1.0 / captureMdt);
 		}
+#endif
         window.clear();
 
 		window.setView(v);//keep view up to date in case we want to do something with like... you know what.
 
+#ifndef NO_IMGUI
 		if (ImGui::CollapsingHeader("Bloom Control")) {
 			ImGui::SliderFloat("bloomWidth", &bloomWidth, 0, 55);//55 is max acceptable kernel size for constants, otherwise we should use a texture
 			ImGui::ColorEdit4("bloomMul", &bloomMul.x);
 			ImGui::ColorEdit4("bloomMul2", &bloomMul.x);
 		}
+#endif
+
+#ifndef NO_IMGUI
 		g.im();
+#endif
 
         g.draw(window);
 
@@ -166,18 +178,24 @@ int main()
 		if (blurShader) blurShader->update(dt);
 		if (bloomShader) bloomShader->update(dt);
 
+    	/*
 		if (bloomWidth)
 			Bloom::render(window,winTex,destX,destFinal,&blurShader->sh,&bloomShader->sh, bloomWidth, bloomMul);
+		*/
 
+#ifndef NO_IMGUI
 		ImGui::SFML::Render(window);
+#endif
         window.display();
 		
 
 		frameEnd = Lib::getTimeStamp();
 		
 		fpsCounter.setString("FPS: "+std::to_string(1.0 / dt));
-		
+
+#ifndef NO_IMGUI
 		ImGui::EndFrame();
+#endif
 		
 		curDts++;
 		if (curDts >= dts.size()) {
@@ -186,7 +204,9 @@ int main()
 		dts[curDts] = dt;
     }
 
+#ifndef NO_IMGUI
 	ImGui::SFML::Shutdown();
+#endif
 
     return 0;
 }
